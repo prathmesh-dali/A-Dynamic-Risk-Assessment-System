@@ -76,7 +76,7 @@ new_f1score = f1_score(y_df, y_pred)
 logging.info("Old F1 score %s", OLD_F1SCORE)
 logging.info("New F1 score %s", new_f1score)
 
-if new_f1score >= OLD_F1SCORE:
+if new_f1score < OLD_F1SCORE:
     logging.info("No drift observed in the data")
     sys.exit()
 

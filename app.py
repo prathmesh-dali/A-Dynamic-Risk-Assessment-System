@@ -18,7 +18,7 @@ from diagnostics import (
 from scoring import score_model
 
 logging.basicConfig()
-logging.root.setLevel(logging.NOTSET)
+logging.root.setLevel(logging.INFO)
 
 
 # Set up variables for use in our script

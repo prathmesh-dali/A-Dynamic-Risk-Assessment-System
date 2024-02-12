@@ -12,6 +12,7 @@ import subprocess
 import sys
 import logging
 import pandas as pd
+import numpy as np
 
 logging.basicConfig()
 logging.root.setLevel(logging.NOTSET)
@@ -101,10 +102,21 @@ def outdated_packages_list():
     and latest version
     '''
     logging.info("Getting outdated modules")
+
+    with open(os.path.join(os.getcwd(), 'requirements.txt'), 'r') as file:
+        requirements = file.read().split('\n')
+    requirements = [r.split('==')[0] for r in requirements if r]
+    df = pd.DataFrame(requirements, columns=['Package'])
+    df['Version'] = np.nan
+    df['Latest'] = np.nan
     outdated_packages = subprocess.check_output(
         ['pip', 'list', '--outdated']).decode(sys.stdout.encoding)
-
-    return str(outdated_packages)
+    outdated_packages = [row.split()[:-1] for row in outdated_packages.split('\n')[2:]]
+    for pkg in outdated_packages:
+        if(len(pkg)>0):
+            df.loc[df['Package'] == pkg[0], ['Version','Latest']] = pkg[1:]
+    df=df.dropna().reset_index(drop=True)
+    return df.to_string(index=False)
 
 
 if __name__ == '__main__':
