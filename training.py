@@ -7,8 +7,12 @@ This script used for training Linear regression model on ingested data
 import json
 import os
 import pickle
+import logging
 import pandas as pd
 from sklearn.linear_model import LogisticRegression
+
+logging.basicConfig()
+logging.root.setLevel(logging.NOTSET)
 
 # Load config.json and get path variables
 with open('config.json', 'r') as f:
@@ -23,6 +27,7 @@ def train_model():
     '''
     This function uses ingested data to train the logistic regression model
     '''
+    logging.info("TRaining the model")
     model = LogisticRegression(
         C=1.0,
         class_weight=None,
@@ -51,7 +56,7 @@ def train_model():
     X_df = data_df.drop(['corporation'], axis=1)
 
     model.fit(X_df, y_df)
-
+    logging.info("Model trained")
     # write the trained model to your workspace in a file called
     # trainedmodel.pkl
 
@@ -63,6 +68,7 @@ def train_model():
                 model_path,
                 'trainedmodel.pkl'),
             'wb'))
+    logging.info("Model saved on disk")
 
 
 if __name__ == '__main__':

@@ -6,8 +6,12 @@ This script used for calculating and storing metric of the model based on test d
 import pickle
 import os
 import json
+import logging
 import pandas as pd
 from sklearn import metrics
+
+logging.basicConfig()
+logging.root.setLevel(logging.NOTSET)
 
 # Load config.json and get path variables
 with open('config.json', 'r') as f:
@@ -23,7 +27,7 @@ def score_model():
     '''
     This funcion calculates the f1 score for the model and stores it in file
     '''
-
+    logging.info("Calculating f1 score")
     data_df = pd.read_csv(
         os.path.join(
             os.getcwd(),
@@ -42,6 +46,7 @@ def score_model():
     with open(os.path.join(os.getcwd(), dataset_csv_path, 'latestscore.txt'), 'w') as file:
         file.write(f"f1 score = {f1score}")
 
+    logging.info("F1 score: %s", f1score)
     return f1score
 
 

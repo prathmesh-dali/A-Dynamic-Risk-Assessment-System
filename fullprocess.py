@@ -9,6 +9,7 @@ import os
 import json
 import subprocess
 import sys
+import logging
 import pandas as pd
 from sklearn.metrics import f1_score
 import training
@@ -18,6 +19,8 @@ import deployment
 import diagnostics
 import reporting
 
+logging.basicConfig()
+logging.root.setLevel(logging.NOTSET)
 
 # Load config.json and get input and output paths
 with open('config.json', 'r') as f:
@@ -27,16 +30,14 @@ input_folder_path = config['input_folder_path']
 output_folder_path = config['output_folder_path']
 prod_deployment_path = config['prod_deployment_path']
 
-# Check and read new data
-# first, read ingestedfiles.txt
+logging.info("Reading the already ingested files")
 ingestedfiles = []
 with open(os.path.join(os.getcwd(), prod_deployment_path, 'ingestedfiles.txt')) as file:
     for line in file:
         ingestedfiles.extend(line.split(":")[-1].strip().split(" "))
 
 
-# second, determine whether the source data folder has files that aren't
-# listed in ingestedfiles.txt
+logging.info("Checking if new files are already ingested")
 files = os.listdir(os.path.join(os.getcwd(), input_folder_path))
 NEW_DATA = False
 for file in files:
@@ -44,50 +45,52 @@ for file in files:
         NEW_DATA = True
 
 
-# Deciding whether to proceed, part 1
-# if you found new data, you should proceed. otherwise, do end the process here
 if not NEW_DATA:
-    print("No new data found")
+    logging.info("No new data found")
     sys.exit()
 
+logging.info("Ingesting new data")
 ingestion.merge_multiple_dataframe()
-# Checking for model drift
-# check whether the score from the deployed model is different from the
-# score from the model that uses the newest ingested data
+
+logging.info("Reading previous f1 score")
 OLD_F1SCORE = 0
 with open(os.path.join(os.getcwd(), prod_deployment_path, 'latestscore.txt')) as file:
     for line in file:
         OLD_F1SCORE = float(line.split('=')[-1].strip())
 
-data = pd.read_csv(
+logging.info("Reading newly ingested data")
+data_df = pd.read_csv(
     os.path.join(
         os.getcwd(),
         output_folder_path,
         'finaldata.csv'))
-y = data.pop('exited')
-X = data.drop(['corporation'], axis=1)
+y_df = data_df.pop('exited')
+X_df = data_df.drop(['corporation'], axis=1)
 
-y_pred = diagnostics.model_predictions(X)
+logging.info("Getting predictions for newly ingested data")
+y_pred = diagnostics.model_predictions(X_df)
 
-new_f1score = f1_score(y, y_pred)
+logging.info("Computing f1 score for newly ingested data")
+new_f1score = f1_score(y_df, y_pred)
 
-# Deciding whether to proceed, part 2
-# if you found model drift, you should proceed. otherwise, do end the
-# process here
+logging.info("Old F1 score %s", OLD_F1SCORE)
+logging.info("New F1 score %s", new_f1score)
 
 if new_f1score >= OLD_F1SCORE:
-    print("Drift has not occured")
+    logging.info("No drift observed in the data")
     sys.exit()
 
-# Re-deployment
-# if you found evidence for model drift, re-run the deployment.py script
-
+logging.info("Traing model on new data")
 training.train_model()
+
+logging.info("Computing scores for newly trained model")
 scoring.score_model()
+
+logging.info("Deploying the newly created model")
 deployment.store_model_into_pickle()
 
-# Diagnostics and reporting
-# run diagnostics.py and reporting.py for the re-deployed model
+logging.info("Generating report for newly created model")
+reporting.generate_report()
 
-reporting.score_model()
+logging.info("Recoring API response for newly created model")
 subprocess.run(['python', 'apicalls.py'])

@@ -6,6 +6,7 @@ This file contains apis for getting prediction and data summary
 
 import json
 import os
+import logging
 from flask import Flask, request
 import pandas as pd
 from diagnostics import (
@@ -15,6 +16,9 @@ from diagnostics import (
     missing_data,
     outdated_packages_list)
 from scoring import score_model
+
+logging.basicConfig()
+logging.root.setLevel(logging.NOTSET)
 
 
 # Set up variables for use in our script
@@ -33,6 +37,7 @@ def predict():
     '''
     This endpoint return predictions for provided csv file
     '''
+    logging.info("Called predict endpoint")
     filepath = request.json.get('dataset_path')
     df = pd.read_csv(os.path.join(os.getcwd(), filepath))
     X_df = df.drop(['corporation', 'exited'], axis=1)
@@ -46,6 +51,7 @@ def scoring():
     '''
     This endpoint return f1 score for test data
     '''
+    logging.info("Called scoring endpoint")
     return str(score_model())
 
 # Summary Statistics Endpoint
@@ -56,6 +62,7 @@ def summary_stats():
     '''
     This endpoint retruns data summary such as mean, median, standard deviation for all columns
     '''
+    logging.info("Called summarystats endpoint")
     return str(dataframe_summary())
 
 # Diagnostics Endpoint
@@ -66,6 +73,7 @@ def diagnostics():
     '''
     This endpoint return the execution time, NA percentage and pip packages details
     '''
+    logging.info("Called diagnostics endpoint")
     et = execution_time()
     nas = missing_data()
     od = outdated_packages_list()

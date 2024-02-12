@@ -6,11 +6,14 @@ This script plots reports such as confusion matrix
 
 import json
 import os
+import logging
 import pandas as pd
 from sklearn import metrics
 import matplotlib.pyplot as plt
 from diagnostics import model_predictions
 
+logging.basicConfig()
+logging.root.setLevel(logging.NOTSET)
 
 # Load config.json and get path variables
 with open('config.json', 'r') as f:
@@ -21,11 +24,12 @@ test_data_path = os.path.join(config['test_data_path'])
 
 
 # Function for reporting
-def score_model():
+def generate_report():
     '''
     This function calculates the confusion matric based on test data and
     saves plot for the same
     '''
+    logging.info("Generating confusion matrix plot")
     data_df = pd.read_csv(
         os.path.join(
             os.getcwd(),
@@ -56,7 +60,8 @@ def score_model():
             os.getcwd(),
             dataset_csv_path,
             "confusionmatrix.png"))
+    logging.info("Saved confusion matrix plot")
 
 
 if __name__ == '__main__':
-    score_model()
+    generate_report()

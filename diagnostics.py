@@ -10,7 +10,11 @@ import json
 import pickle
 import subprocess
 import sys
+import logging
 import pandas as pd
+
+logging.basicConfig()
+logging.root.setLevel(logging.NOTSET)
 
 # Load config.json and get environment variables
 with open('config.json', 'r') as f:
@@ -27,6 +31,7 @@ def model_predictions(X_df):
     '''
     This function loads saved model and returns the prediction based on the provided input
     '''
+    logging.info("Making predictions for input data")
     with open(os.path.join(os.getcwd(), prod_deployment_path, 'trainedmodel.pkl'), 'rb') as file:
         model = pickle.load(file)
     return model.predict(X_df)
@@ -39,6 +44,7 @@ def dataframe_summary():
     This function calculates the summary of the ingested data such as mean, median, standard
     deviation for each column.
     '''
+    logging.info("Computing data summary")
     df = pd.read_csv(
         os.path.join(
             os.getcwd(),
@@ -59,6 +65,7 @@ def missing_data():
     '''
     This function returns the percentage of NA cells in each column for ingested data
     '''
+    logging.info("Computing NA percentage")
     df = pd.read_csv(
         os.path.join(
             os.getcwd(),
@@ -75,6 +82,7 @@ def execution_time():
     '''
     This function return the execution time for the ingestion and training scripts
     '''
+    logging.info("Computing execution time")
     starttime = timeit.default_timer()
     os.system('python ingestion.py')
     ingestion_time = timeit.default_timer() - starttime
@@ -92,6 +100,7 @@ def outdated_packages_list():
     This function returns list of outdated packages along with the current version
     and latest version
     '''
+    logging.info("Getting outdated modules")
     outdated_packages = subprocess.check_output(
         ['pip', 'list', '--outdated']).decode(sys.stdout.encoding)
 
