@@ -1,0 +1,15 @@
+[0 1 1 1 1]
+0.5714285714285714
+[['lastmonth_activity', 'mean', 165.65384615384616], ['lastmonth_activity', 'median', 73.0], ['lastmonth_activity', 'standard deviation', 284.0332293669446], ['lastyear_activity', 'mean', 1502.923076923077], ['lastyear_activity', 'median', 955.0], ['lastyear_activity', 'standard deviation', 2192.64495845683], ['number_of_employees', 'mean', 26.884615384615383], ['number_of_employees', 'median', 14.0], ['number_of_employees', 'standard deviation', 31.35388578543581]]
+execution_time:[0.4860664000007091, 1.032135900000867]
+missing_data;[0.0, 0.0, 0.0, 0.0, 0.0]
+outdated_packages:Package    Version Latest Type
+---------- ------- ------ -----
+pandas     1.5.2   2.2.0  wheel
+pip        23.2.1  24.0   wheel
+pydantic   1.10.14 2.6.1  wheel
+pytz       2023.4  2024.1 wheel
+setuptools 65.5.0  69.1.0 wheel
+SQLAlchemy 2.0.25  2.0.26 wheel
+starlette  0.36.3  0.37.1 wheel
+tzdata     2023.4  2024.1 wheel

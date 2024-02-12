@@ -1,50 +1,80 @@
+"""
+Author: Prathmesh Dali
+Date: February, 2023
+This script calculates diagnostics summary of the model
+"""
 
-import pandas as pd
-import numpy as np
 import timeit
 import os
 import json
 import pickle
 import subprocess
 import sys
+import pandas as pd
 
-##################Load config.json and get environment variables
-with open('config.json','r') as f:
-    config = json.load(f) 
+# Load config.json and get environment variables
+with open('config.json', 'r') as f:
+    config = json.load(f)
 
-dataset_csv_path = os.path.join(config['output_folder_path']) 
-test_data_path = os.path.join(config['test_data_path']) 
+dataset_csv_path = os.path.join(config['output_folder_path'])
+test_data_path = os.path.join(config['test_data_path'])
 prod_deployment_path = os.path.join(config['prod_deployment_path'])
 
-##################Function to get model predictions
-def model_predictions(data):
-    #read the deployed model and a test dataset, calculate predictions
+# Function to get model predictions
+
+
+def model_predictions(X_df):
+    '''
+    This function loads saved model and returns the prediction based on the provided input
+    '''
     with open(os.path.join(os.getcwd(), prod_deployment_path, 'trainedmodel.pkl'), 'rb') as file:
         model = pickle.load(file)
-    return model.predict(data)#return value should be a list containing all predictions
+    return model.predict(X_df)
 
-##################Function to get summary statistics
+# Function to get summary statistics
+
+
 def dataframe_summary():
-    #calculate summary statistics here
-    data = pd.read_csv(os.path.join(os.getcwd(), dataset_csv_path, 'finaldata.csv'))
-    non_numeric_columns = data.select_dtypes(include='object').columns.tolist()
-    data.pop('exited')
-    data = data.drop(columns=non_numeric_columns, axis=1)
-    results =[]
-    for col in data.columns:
-        results.append([col, "mean", data[col].mean()])
-        results.append([col, "median", data[col].median()])
-        results.append([col, "standard deviation", data[col].std()])
-    return results#return value should be a list containing all summary statistics
-
-def missing_data():
-    data = pd.read_csv(os.path.join(os.getcwd(), dataset_csv_path, 'finaldata.csv'))
-    nas = list(data.isna().sum())
-    results = [nas[i]/len(data.index) for i in range(len(nas))]
+    '''
+    This function calculates the summary of the ingested data such as mean, median, standard
+    deviation for each column.
+    '''
+    df = pd.read_csv(
+        os.path.join(
+            os.getcwd(),
+            dataset_csv_path,
+            'finaldata.csv'))
+    non_numeric_columns = df.select_dtypes(include='object').columns.tolist()
+    df.pop('exited')
+    df = df.drop(columns=non_numeric_columns, axis=1)
+    results = []
+    for col in df.columns:
+        results.append([col, "mean", df[col].mean()])
+        results.append([col, "median", df[col].median()])
+        results.append([col, "standard deviation", df[col].std()])
     return results
 
-##################Function to get timings
+
+def missing_data():
+    '''
+    This function returns the percentage of NA cells in each column for ingested data
+    '''
+    df = pd.read_csv(
+        os.path.join(
+            os.getcwd(),
+            dataset_csv_path,
+            'finaldata.csv'))
+    nas = list(df.isna().sum())
+    results = [nas[i] / len(df.index) for i in range(len(nas))]
+    return results
+
+# Function to get timings
+
+
 def execution_time():
+    '''
+    This function return the execution time for the ingestion and training scripts
+    '''
     starttime = timeit.default_timer()
     os.system('python ingestion.py')
     ingestion_time = timeit.default_timer() - starttime
@@ -52,28 +82,31 @@ def execution_time():
     starttime = timeit.default_timer()
     os.system('python training.py')
     training_time = timeit.default_timer() - starttime
-    #calculate timing of training.py and ingestion.py
-    return [ingestion_time, training_time]#return a list of 2 timing values in seconds
+    return [ingestion_time, training_time]
 
-##################Function to check dependencies
+# Function to check dependencies
+
+
 def outdated_packages_list():
-    #get a list of 
-    outdated_packages = subprocess.check_output(['pip', 'list', '--outdated']).decode(sys.stdout.encoding)
+    '''
+    This function returns list of outdated packages along with the current version
+    and latest version
+    '''
+    outdated_packages = subprocess.check_output(
+        ['pip', 'list', '--outdated']).decode(sys.stdout.encoding)
 
     return str(outdated_packages)
 
 
 if __name__ == '__main__':
-    data = pd.read_csv(os.path.join(os.getcwd(), test_data_path, 'testdata.csv'))
-    data = data.drop(['corporation', 'exited'], axis=1)
-    model_predictions(data)
-    print(dataframe_summary())
+    data_df = pd.read_csv(
+        os.path.join(
+            os.getcwd(),
+            test_data_path,
+            'testdata.csv'))
+    data_df = data_df.drop(['corporation', 'exited'], axis=1)
+    model_predictions(data_df)
+    dataframe_summary()
     execution_time()
     missing_data()
     outdated_packages_list()
-
-
-
-
-
-    
