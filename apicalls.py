@@ -21,7 +21,7 @@ response3 = requests.get(f"{URL}summarystats", timeout=100).text
 response4 = requests.get(f"{URL}diagnostics", timeout=100).text
 
 # combine all API responses
-responses = response1 + "\n" + response2 + "\n" + response3 + "\n" + response4
+responses = "Predictions: " + response1 + "\nF1 Score: " + response2 + "\nData Summary: " + response3 + "\n" + response4
 
 # write the responses to workspace
 

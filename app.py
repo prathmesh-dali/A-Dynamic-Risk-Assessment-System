@@ -70,11 +70,11 @@ def diagnostics():
     nas = missing_data()
     od = outdated_packages_list()
     return str(
-        "execution_time:" +
+        "execution_time: " +
         str(et) +
-        "\nmissing_data;" +
+        "\nmissing_data: " +
         str(nas) +
-        "\noutdated_packages:" +
+        "\noutdated_packages: \n" +
         od)
 
 
